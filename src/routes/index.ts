@@ -2,8 +2,8 @@
 // Also acts as a parent-router for exposing other router modules
 
 import { join } from "path";
+import { readdirSync } from "fs";
 import { Router } from "express";
-import * as demoRouter from "./demoRouter";
 
 const router = Router();
 
@@ -23,7 +23,9 @@ router.get("/", (req, res) => {
     });
 });
 
-// Import your Router modules to the parent Router here
-router.use(demoRouter);
+// Dynamically load Router modules from this directory
+readdirSync(join("dist", "routes"))
+    .filter(file => file !== "index.js" && file.match(/.js$/))
+    .forEach(file => router.use(require(`./${file}`)));
 
 export = router;
