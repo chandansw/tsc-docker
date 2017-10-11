@@ -11,4 +11,4 @@ RUN npm run tsc-build
 
 EXPOSE 8000
 
-CMD ["node", "./dist/index.js"]
+CMD ["node", "./dist/index.js" "--port=8000"]

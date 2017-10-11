@@ -1,7 +1,12 @@
+// The main API application instance
+// Here middleware are assigned to parse POST data and log request/response info
+// Also handlers are assigned for logging and returning errors
+
 import * as express from "express";
 import * as bodyParser from "body-parser";
 import { HttpError, NotFound, InternalServerError, Forbidden } from "http-errors";
 import { Logger } from "./logger";
+import * as routes from "../routes";
 
 const logger = Logger.getInstance();
 
@@ -21,6 +26,7 @@ export class Application {
         this._instance.use(bodyParser.urlencoded({ extended: true }));
 
         // Log request/response middleware
+        // Logs the request method, path and response code
         this._instance.use((req, res, next) => {
             function requestLogger() {
                 res.removeListener("finish", requestLogger);
@@ -32,32 +38,28 @@ export class Application {
             next();
         });
 
-        // TODO Load from router modules
-
-        // GET / - Return successful response
-        this._instance.get("/", (req, res) => { res.send("Hello World"); });
-
-        // GET /error - throws standard Error, returns Internal Server Error response
-        this._instance.get("/error", (req, res) => { throw new Error("Danger Will Robinson!"); });
-
-        // GET /forbidden - throws Forbidden Error, returns Forbidden response
-        this._instance.get("/forbidden", (req, res) => { throw new Forbidden("lol nope"); });
+        // Load from router modules
+        this._instance.use(routes);
 
         // 404 Not Found
+        // If no previous route handler has matched the request, this one is called
         this._instance.use((req, res, next) => { throw new NotFound(); });
 
         // Error handler
+        // This catches any error thrown in the aplication
+        // If the error is an HttpError, it is used in the response
+        // For all other errors, the error is logs and an Internal Server Error is returned
         this._instance.use((err: HttpError | Error, req, res, next) => {
             if (err instanceof HttpError) {
                 // Response with thrown HTTP Errors
                 res.status(err.statusCode);
-                res.send(err.message);
+                res.jsonp({ error: { status: err.statusCode, message: err.message } });
             } else {
                 // Log other Errors and respond with Internal Server Error
                 logger.error(err);
                 const ise = new InternalServerError();
                 res.status(ise.statusCode);
-                res.send(ise.message);
+                res.jsonp({ error: { status: ise.statusCode, message: ise.message } });
             }
         });
 
