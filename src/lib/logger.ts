@@ -29,5 +29,3 @@ export class Logger {
     // Bunyan logger singleton instance
     private static _instance: bunyan;
 }
-
-const logger = Logger.getInstance();
