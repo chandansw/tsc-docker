@@ -6,7 +6,7 @@ import { DB } from "./db";
  * Convert ID string to ObjectID for use in queries
  * @param id ID String
  */
-function _id(id: string): ObjectID {
+export function _id(id: string): ObjectID {
     try {
         return new ObjectID(id);
     } catch (err) {
@@ -73,59 +73,50 @@ export class CollectionMediator {
         this._class = cls;
     }
 
-    /**
-     * Find all records in this Collections
-     */
-    public findAll(): Promise<Array<any>> {
-        return this._collection.find({}).toArray()
+    public find(query?: Object): Promise<Array<any>> {
+        return this._collection.find(query).toArray()
             .then(arr => arr.map(obj => mapObject(obj, this._class)));
     }
 
-    /**
-     * Find one record in this Collection by ID
-     * @param id ID String
-     */
-    public findOne(id: string): Promise<any> {
-        return this._collection.findOne({ _id: _id(id) })
-            .then(obj => mapObject(obj, this._class));
+    public findOne(query: Object): Promise<any> {
+        return this._collection.findOne(query)
+            .then(obj => {
+                if (obj == null) throw new NotFound();
+                return mapObject(obj, this._class)
+            });
     }
 
-    /**
-     * Find all records in the set of IDs
-     * @param ids Array of ids
-     */
-    public findMany(ids: Array<string>): Promise<Array<any>> {
-        return this._collection.find({ _id: { $in: _ids(ids) } }).toArray()
-            .then(arr => arr.map(obj => mapObject(obj, this._class)));
-    }
-
-    /**
-     * Insert a new record into this Collection
-     * @param data Data Object
-     */
     public insert(data: Object): Promise<any> {
         return this._collection.insert(data)
             .then(res => res.ops[0])
             .then(obj => mapObject(obj, this._class));
     }
 
-    /**
-     * Update (replace) a record in this Collection
-     * @param id ID String
-     * @param data Data Object
-     */
-    public update(id: string, data: Object): Promise<any> {
+    public update(query: Object, data: Object): Promise<Array<any>> {
         return this._collection
-            .findOneAndReplace({ _id: _id(id) }, data)
-            .then(_ => this.findOne(id));
+            .findOneAndReplace(query, data)
+            .then(_ => this.find(query));
     }
 
-    /**
-     * Delete a record from this Collection
-     * @param id ID String
-     */
-    public delete(id: string): Promise<string> {
-        return this._collection.findOneAndDelete({ _id: _id(id) })
+    public delete(query): Promise<any> {
+        return this._collection.findOneAndDelete(query);
+    }
+
+    public findByIDs(ids: Array<string>): Promise<Array<any>> {
+        return this.find({ _id: { $in: _ids(ids) } });
+    }
+
+    public findOneByID(id: string): Promise<any> {
+        return this.findOne({ _id: _id(id) });
+    }
+
+    public updateByID(id: string, data: Object): Promise<any> {
+        return this.update({ _id: _id(id) }, data)
+            .then(res => res[0]);
+    }
+
+    public deleteById(id: string): Promise<string> {
+        return this.delete({ _id: _id(id) })
             .then(_ => id);
     }
 }

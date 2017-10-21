@@ -1,36 +1,37 @@
+import { ObjectID } from "mongodb";
+import { BadRequest } from "http-errors";
 import { CollectionMediator } from "../lib/collectionMediator";
 
 export class Country {
 
-    public _id: string;
+    public _id?: ObjectID;
 
-    public type: string;
+    public type?: string;
 
     public name: string = null;
 
-    static _mediator = new CollectionMediator("countries", Country);
+    static _c = new CollectionMediator("countries", Country);
 
     static findAll(): Promise<Array<Country>> {
-        return this._mediator.findAll();
+        return this._c.find();
     }
 
-    static findOne(id): Promise<Country> {
-        return this._mediator.findOne(id);
+    static insert(data: Country): Promise<Country> {
+        if (!data.name) throw new BadRequest("Required field 'name' missing");
+        return this._c.insert(data);
     }
 
-    static findMany(ids: Array<string>): Promise<Array<Country>> {
-        return this._mediator.findMany(ids);
+    static findOne(id: string): Promise<Country> {
+        return this._c.findOneByID(id);
     }
 
-    static insert(data): Promise<Country> {
-        return this._mediator.insert(data);
+    static update(id: string, data: Country): Promise<Country> {
+        if (!data.name) throw new BadRequest("Required field 'name' missing");
+        delete data._id;
+        return this._c.updateByID(id, data);
     }
 
-    static update(id, data): Promise<Country> {
-        return this._mediator.update(id, data);
-    }
-
-    static delete(id): Promise<string> {
-        return this._mediator.delete(id);
+    static delete(id: string): Promise<string> {
+        return this._c.deleteById(id);
     }
 }
