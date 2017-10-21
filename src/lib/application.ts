@@ -6,7 +6,6 @@ import * as express from "express";
 import * as bodyParser from "body-parser";
 import { HttpError, NotFound, InternalServerError, Forbidden } from "http-errors";
 import { Logger } from "./logger";
-import * as routes from "../routes";
 
 const logger = Logger.getInstance();
 
@@ -38,7 +37,9 @@ export class Application {
             next();
         });
 
-        // Load from router modules
+        // Load router modules
+        // impoted here to ensure DB connection is available
+        const routes = require("../routes");
         this._instance.use(routes);
 
         // 404 Not Found

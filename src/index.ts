@@ -3,15 +3,21 @@
 
 import { argv } from "yargs";
 import { Logger } from "./lib/logger";
+import { DB } from "./lib/db";
 import { Application } from "./lib/application";
 
 // CLI Arguments
 const PORT = argv.port || 1337;
 const HOST = argv.host || "0.0.0.0";
+const DBURL = argv.dburl || 'mongodb://localhost:27017/mydb';
 
-// Get instances
-const logger = Logger.getInstance();
-const app = Application.getInstance();
+// Connect to DB
+DB.connect(DBURL).then(_ => {
 
-// Serve application
-app.listen(PORT, HOST, _ => logger.info(`Serving application on http://${HOST}:${PORT}`));
+    // Get instances
+    const logger = Logger.getInstance();
+    const app = Application.getInstance();
+
+    // Serve application
+    app.listen(PORT, HOST, _ => logger.info(`Serving application on http://${HOST}:${PORT}`));
+});
