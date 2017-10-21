@@ -30,10 +30,8 @@ export class City {
 
     static update(id: string, countryId: string, data: City): Promise<City> {
         if (!data.name) throw new BadRequest("Required field 'name' missing");
-        data._id = _id(id);
         data.countryId = _id(countryId);
-        return this._c.update({ _id: _id(id), countryId: _id(countryId) }, data)
-            .then(res => res[0]);
+        return this._c.updateOne({ _id: _id(id), countryId: _id(countryId) }, data);
     }
 
     static delete(id: string, countryId: string): Promise<string> {

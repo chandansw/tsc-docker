@@ -10,7 +10,7 @@ export function _id(id: string): ObjectID {
     try {
         return new ObjectID(id);
     } catch (err) {
-        throw new NotFound(`No record exists with id: '${id}'`);
+        throw new NotFound(`Not a valid resource id: '${id}'`);
     }
 }
 
@@ -73,31 +73,67 @@ export class CollectionMediator {
         this._class = cls;
     }
 
+    /**
+     * Find records by query
+     * @param query
+     */
     public find(query?: Object): Promise<Array<any>> {
         return this._collection.find(query).toArray()
             .then(arr => arr.map(obj => mapObject(obj, this._class)));
     }
 
+    /**
+     * Find one record by query
+     * @param query
+     */
     public findOne(query: Object): Promise<any> {
         return this._collection.findOne(query)
             .then(obj => {
-                if (obj == null) throw new NotFound();
+                if (obj == null) throw new NotFound(`No record exists with that id`);
                 return mapObject(obj, this._class)
             });
     }
 
+    /**
+     * Insert new record
+     * @param data
+     */
     public insert(data: Object): Promise<any> {
         return this._collection.insert(data)
             .then(res => res.ops[0])
             .then(obj => mapObject(obj, this._class));
     }
 
+    /**
+     * Update records by query
+     * @param query
+     * @param data
+     */
     public update(query: Object, data: Object): Promise<Array<any>> {
         return this._collection
             .findOneAndReplace(query, data)
             .then(_ => this.find(query));
     }
 
+    /**
+     * Update one record by query
+     * Throws Not Found if.. er.. not found
+     * @param query
+     * @param data
+     */
+    public updateOne(query: Object, data: any): Promise<any> {
+        delete data._id;
+        return this.update(query, data)
+            .then(res => {
+                if (res.length) return res[0];
+                throw NotFound(`No record exists with that id`);
+            });
+    }
+
+    /**
+     * Delete records by query
+     * @param query
+     */
     public delete(query): Promise<any> {
         return this._collection.findOneAndDelete(query);
     }
