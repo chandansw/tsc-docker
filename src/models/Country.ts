@@ -1,6 +1,6 @@
 import { ObjectID } from "mongodb";
-import { BadRequest } from "http-errors";
-import { CollectionMediator } from "../lib/collectionMediator";
+import { BadRequest, NotFound } from "http-errors";
+import { _id, CollectionMediator } from "../lib/collectionMediator";
 
 export class Country {
 
@@ -22,16 +22,17 @@ export class Country {
     }
 
     static findOne(id: string): Promise<Country> {
-        return this._c.findOneByID(id);
+        return this._c.findOne({ _id: _id(id) });
     }
 
     static update(id: string, data: Country): Promise<Country> {
         if (!data.name) throw new BadRequest("Required field 'name' missing");
         delete data._id;
-        return this._c.updateByID(id, data);
+        return this._c.update({ _id: _id(id) }, data)
+            .then(res => res[0]);
     }
 
     static delete(id: string): Promise<string> {
-        return this._c.deleteById(id);
+        return this._c.delete({ _id: _id(id) });
     }
 }

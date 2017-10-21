@@ -37,7 +37,7 @@ function _ids(ids: Array<string>): Array<ObjectID> {
 function mapObject(obj: Object, cls) {
     let item = new cls();
     item._id = obj["_id"];
-    item.type = item.constructor.name;
+    item.type = item.constructor.name.toLowerCase();
     Object.keys(item).forEach(k => item[k] = (obj[k]) ? obj[k] : item[k]);
     return item;
 }
@@ -100,23 +100,5 @@ export class CollectionMediator {
 
     public delete(query): Promise<any> {
         return this._collection.findOneAndDelete(query);
-    }
-
-    public findByIDs(ids: Array<string>): Promise<Array<any>> {
-        return this.find({ _id: { $in: _ids(ids) } });
-    }
-
-    public findOneByID(id: string): Promise<any> {
-        return this.findOne({ _id: _id(id) });
-    }
-
-    public updateByID(id: string, data: Object): Promise<any> {
-        return this.update({ _id: _id(id) }, data)
-            .then(res => res[0]);
-    }
-
-    public deleteById(id: string): Promise<string> {
-        return this.delete({ _id: _id(id) })
-            .then(_ => id);
     }
 }
