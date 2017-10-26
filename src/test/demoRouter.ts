@@ -12,7 +12,7 @@ describe("Basic API Routes", () => {
         it("should return a PONG response", done => {
             app.get("/ping")
                 .expect(200, "PONG")
-                .end((err, res) => err ? done(err) : done());
+                .end(done);
         });
     });
 
@@ -22,7 +22,7 @@ describe("Basic API Routes", () => {
             app.get("/redir")
                 .expect(302)
                 .expect("location", "https://google.com")
-                .end((err, res) => err ? done(err) : done());
+                .end(done);
         });
     });
 
@@ -37,7 +37,7 @@ describe("Basic API Routes", () => {
                         message: "Internal Server Error"
                     }
                 })
-                .end((err, res) => err ? done(err) : done());
+                .end(done);
         });
     });
 
@@ -53,7 +53,7 @@ describe("Basic API Routes", () => {
                         message: "Not a Coffee Pot"
                     }
                 })
-                .end((err, res) => err ? done(err) : done());
+                .end(done);
         });
     });
 
@@ -69,7 +69,7 @@ describe("Basic API Routes", () => {
                 .expect(res => assert.deepEqual(res.body.data.method, "POST"))
                 .expect(res => assert.deepEqual(res.body.data.path, "/echo"))
                 .expect(res => assert.deepEqual(res.body.data.query, { foo: "bar" }))
-                .end((err, res) => err ? done(err) : done());
+                .end(done);
         });
     });
 });

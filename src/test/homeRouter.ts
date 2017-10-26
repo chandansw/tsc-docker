@@ -24,7 +24,7 @@ describe("API Home Route", () => {
                         author: metadata.author,
                     }
                 })
-                .end((err, res) => err ? done(err) : done());
+                .end(done);
         });
     });
 });
