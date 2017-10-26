@@ -24,6 +24,13 @@ export class DB {
     }
 
     /**
+     * Disconnect from DB
+     */
+    public static disconnect(){
+        this.getInstance().close();
+    }
+
+    /**
      * Get the current MongoDB Database Object or throw an error
      */
     public static getInstance(): Db {
