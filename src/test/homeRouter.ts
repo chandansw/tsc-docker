@@ -8,11 +8,11 @@ const app = supertest(Application.getInstance());
 
 const metadata = require(join("..", "..", "package.json"));
 
-describe("Basic API Routes", () => {
+describe("API Home Route", () => {
 
     describe("GET /", () => {
 
-        it("should return a friendly JSON message", done => {
+        it("should return API metadata", done => {
             app.get("/")
                 .expect("content-type", /json/)
                 .expect(200, {
