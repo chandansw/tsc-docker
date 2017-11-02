@@ -26,8 +26,10 @@
     "typescript": "^2.5.3"
   },
   "dependencies": {
+    "@types/mongoose": "^4.7.24",
     "bunyan": "^1.8.12",
     "express": "^4.16.2",
+    "mongoose": "^4.12.6",
     "yargs": "^9.0.1"
   }
 }
