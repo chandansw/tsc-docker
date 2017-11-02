@@ -32,10 +32,10 @@ describe("Basic API Routes", () => {
             app.get("/error")
                 .expect("content-type", /json/)
                 .expect(500, {
-                    error: {
+                    errors: [{
                         status: 500,
                         message: "Internal Server Error"
-                    }
+                    }]
                 })
                 .end(done);
         });
@@ -47,11 +47,10 @@ describe("Basic API Routes", () => {
             app.get("/teapot")
                 .expect("content-type", /json/)
                 .expect(418, {
-                    error: {
-
+                    errors: [{
                         status: 418,
                         message: "Not a Coffee Pot"
-                    }
+                    }]
                 })
                 .end(done);
         });

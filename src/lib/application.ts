@@ -4,7 +4,7 @@
 
 import * as express from "express";
 import * as bodyParser from "body-parser";
-import { HttpError, NotFound, InternalServerError, Forbidden } from "http-errors";
+import { HttpError, NotFound, Forbidden } from "http-errors";
 import { Logger } from "./logger";
 import * as routes from "../routes";
 
@@ -53,13 +53,17 @@ export class Application {
             if (err instanceof HttpError) {
                 // Response with thrown HTTP Errors
                 res.status(err.statusCode);
-                res.jsonp({ error: { status: err.statusCode, message: err.message } });
+                res.jsonp({ errors: [{ status: err.statusCode, message: err.message }] });
+            } else if (err.errors) {
+                // Return validation errors from mongoose
+                let errors = Object.keys(err.errors).map(k => ({ status: 400, field: k, message: err.errors[k].message.replace("Path", "Field") }))
+                res.status(400);
+                res.jsonp({ errors: errors });
             } else {
                 // Log other Errors and respond with Internal Server Error
                 logger.error(err);
-                const ise = new InternalServerError();
-                res.status(ise.statusCode);
-                res.jsonp({ error: { status: ise.statusCode, message: ise.message } });
+                res.status(500);
+                res.jsonp({ errors: [{ status: 500, message: "Internal Server Error" }] });
             }
         });
 
