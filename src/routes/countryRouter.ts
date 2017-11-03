@@ -15,7 +15,7 @@ router.get("/country", (req, res, next) => {
 });
 
 router.post("/country", (req, res, next) => {
-    Country.create([req.body])
+    new Country(req.body).save()
         .then(data => { res.jsonp(ok(data)) }, next)
 });
 
