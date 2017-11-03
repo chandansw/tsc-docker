@@ -4,6 +4,7 @@
 
 import * as express from "express";
 import * as bodyParser from "body-parser";
+import { CastError } from "mongoose";
 import { HttpError, NotFound, Forbidden } from "http-errors";
 import { Logger } from "./logger";
 import * as routes from "../routes";
@@ -54,6 +55,10 @@ export class Application {
                 // Response with thrown HTTP Errors
                 res.status(err.statusCode);
                 res.jsonp({ errors: [{ status: err.statusCode, message: err.message }] });
+            } else if (err instanceof CastError) {
+                // Response with 404 if cannot parse Object ID
+                res.status(404);
+                res.jsonp({ errors: [{ status: 404, message: "Not Found" }] });
             } else if (err.errors) {
                 // Return validation errors from mongoose
                 let errors = Object.keys(err.errors).map(k => ({ status: 400, field: k, message: err.errors[k].message.replace("Path", "Field") }))
