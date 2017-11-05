@@ -181,7 +181,12 @@ describe("Country API Routes", () => {
                             assert.equal(country.name, "North Korea");
                             assert.equal(country.url, `/country/${country.id}`);
                         })
-                        .end(done);
+                        .end(_ => {
+                            Country.findById(country.id)
+                                .then(doc => assert.strictEqual(doc, null))
+                                .then(_ => done())
+                                .catch(done)
+                        });
                 })
                 .catch(done);
         });
