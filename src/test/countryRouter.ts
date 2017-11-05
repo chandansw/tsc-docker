@@ -12,6 +12,14 @@ let app = supertest(Application.getInstance());
 const reId = /^[a-z0-9]{24}$/;
 const reTime = /^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\.[0-9]{3}Z$/;
 
+const response400 = {
+    errors: [{
+        field: "name",
+        message: "Field `name` is required.",
+        status: 400
+    }]
+};
+
 const response404 = {
     errors: [{
         message: "Not Found",
@@ -56,13 +64,7 @@ describe("Country API Routes", () => {
         it("should 400 if required field missing", done => {
             app.post("/country")
                 .send({})
-                .expect(400, {
-                    errors: [{
-                        field: "name",
-                        message: "Field `name` is required.",
-                        status: 400
-                    }]
-                })
+                .expect(400, response400)
                 .end(done);
         });
 
@@ -98,10 +100,15 @@ describe("Country API Routes", () => {
                 .end(done);
         });
 
-        xit("should get a single Country", done => {
-            app.get("/country/000000000000000000000000")
-                .expect(200, { data: [] })
-                .end(done);
+        it("should get a single Country", done => {
+            Country.insertMany([{ name: "United States" }])
+                .then(countries => JSON.parse(JSON.stringify(countries[0])))
+                .then(country => {
+                    app.get(`/country/${country.id}`)
+                        .expect(200, { data: country })
+                        .end(done);
+                })
+                .catch(done);
         });
     });
 
@@ -121,16 +128,26 @@ describe("Country API Routes", () => {
                 .end(done);
         });
 
-        xit("should 400 if required field missing", done => {
-            app.get("/country")
-                .expect(400, { errors: [] })
-                .end(done);
-        });
-
-        xit("should update a single Country", done => {
-            app.get("/country/000000000000000000000000")
-                .expect(200, { data: [] })
-                .end(done);
+        it("should update a single Country", done => {
+            Country.insertMany([{ name: "Burma" }])
+                .then(countries => JSON.parse(JSON.stringify(countries[0])))
+                .then(country => {
+                    app.post(`/country/${country.id}`)
+                        .send({ name: "Myanmar" })
+                        .expect(200)
+                        .expect(res => {
+                            let country = res.body.data;
+                            assert.deepEqual(Object.keys(country).sort(), ['createdAt', 'id', 'name', 'type', 'updatedAt', 'url']);
+                            assert.ok(country.id.match(reId));
+                            assert.ok(country.createdAt.match(reTime));
+                            assert.ok(country.updatedAt.match(reTime));
+                            assert.equal(country.type, "Country");
+                            assert.equal(country.name, "Myanmar");
+                            assert.equal(country.url, `/country/${country.id}`);
+                        })
+                        .end(done);
+                })
+                .catch(done);
         });
     });
 
@@ -148,10 +165,25 @@ describe("Country API Routes", () => {
                 .end(done);
         });
 
-        xit("should delete a single Country", done => {
-            app.get("/country/000000000000000000000000")
-                .expect(200, { data: [] })
-                .end(done);
+        it("should delete a single Country", done => {
+            Country.insertMany([{ name: "North Korea" }])
+                .then(countries => JSON.parse(JSON.stringify(countries[0])))
+                .then(country => {
+                    app.delete(`/country/${country.id}`)
+                        .expect(200)
+                        .expect(res => {
+                            let country = res.body.data;
+                            assert.deepEqual(Object.keys(country).sort(), ['createdAt', 'id', 'name', 'type', 'updatedAt', 'url']);
+                            assert.ok(country.id.match(reId));
+                            assert.ok(country.createdAt.match(reTime));
+                            assert.ok(country.updatedAt.match(reTime));
+                            assert.equal(country.type, "Country");
+                            assert.equal(country.name, "North Korea");
+                            assert.equal(country.url, `/country/${country.id}`);
+                        })
+                        .end(done);
+                })
+                .catch(done);
         });
     });
 
